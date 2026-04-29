@@ -1,21 +1,19 @@
 services:
   - type: web
     name: ngo-volunteer-app
-    env: docker
+    env: java
     plan: free
     region: ohio
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/ngoApp-0.0.1-SNAPSHOT.jar
     healthCheckPath: /
     autoDeploy: true
-
-  - type: database
-    name: ngo-db
-    plan: free
-    region: ohio
-    databaseName: ngo
-    user: root
-    # Render doesn't allow setting the password directly in YAML for security, 
-    # but since the user requested hardcoding secrets to avoid env vars, 
-    # we'll assume the app will connect to this DB.
-    # Note: Render's internal DB connection usually uses a connection string.
+    disk:
+      name: ngo-volunteer-data
+      mountPath: /opt/render/project/data
+      sizeGB: 1
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
+      - key: APP_BASE_URL
+        value: https://ngo-volunteer-app.onrender.com
