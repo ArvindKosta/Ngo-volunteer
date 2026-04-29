@@ -20,17 +20,32 @@ public class WhatsAppService {
     @Value("${twilio.whatsapp}")
     private String from;
 
+    private boolean enabled;
+
     @PostConstruct
     public void init() {
+        enabled = hasText(sid) && hasText(token) && hasText(from);
+        if (!enabled) {
+            System.out.println("Twilio credentials are not configured. WhatsApp notifications are disabled.");
+            return;
+        }
         Twilio.init(sid, token);
     }
 
     public void send(String to, String msg) {
+        if (!enabled) {
+            System.out.println("Skipping WhatsApp send because Twilio is disabled: " + to + "-" + msg);
+            return;
+        }
     	System.out.println(to+"-"+msg);
         Message.creator(
                 new PhoneNumber("whatsapp:" + to),
                 new PhoneNumber(from),
                 msg
         ).create();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }
